@@ -1,6 +1,6 @@
 
 #编译使用的平台 Windows Linux
-HOST_OS = Linux
+HOST_OS = Windows
 BIN_NAME = main
 
 #要编译的文件
@@ -17,6 +17,8 @@ ifeq ($(HOST_OS), Windows)
 	MK_DIR 	= mkdir
 	RM_DIR 	= rmdir /s /q
 
+	# LINK_SCRIPT = link_tp.ld
+	
 	OUT_BIN = $(BIN_NAME).exe
 
 	CINCLUDE_FILE_FLAG = -Iinclude
@@ -29,11 +31,15 @@ else
 	MK_DIR 	= mkdir
 	RM_DIR 	= rm -rf
 
+	# LINK_SCRIPT = link_linux.ld
+
 	OUT_BIN = $(BIN_NAME)
 
 	CINCLUDE_FILE_FLAG = -Iinclude
 endif
 
+# 可以使用链接脚本
+# CLINK_FLAGS += -g -ffunction-sections -fdata-sections -Wl,-T "$(LINK_SCRIPT)"
 CLINK_FLAGS += -g
 CFLAGS		+= -g
 
@@ -57,7 +63,7 @@ all: $(OUT_BIN)
 
 ifeq ($(HOST_OS), Windows)
 $(OUT_BIN): $(BIN_DIR_WINDOWS) $(OBJ_TARGET_WINDOWS)
-	$(LD) $(CLINK_FLAGS) -o $(BIN_DIR_WINDOWS)\\$@ $(OBJ_TARGET_WINDOWS)
+	$(LD) $(CLINK_FLAGS) -Wl,-Map,$(BIN_DIR_WINDOWS)\\$(BIN_NAME).map -o $(BIN_DIR_WINDOWS)\\$@ $(OBJ_TARGET_WINDOWS)
 
 $(BIN_DIR_WINDOWS):
 	$(MK_DIR) $(OUT_DIR)
@@ -74,7 +80,7 @@ dbg: $(BIN_DIR_WINDOWS)\\$(OUT_BIN)
 	gdb $(BIN_DIR_WINDOWS)\\$(OUT_BIN)
 else
 $(OUT_BIN): $(BIN_DIR_LINUX) $(OBJ_TARGET_LINUX)
-	$(LD) $(CLINK_FLAGS) -o $(BIN_DIR_LINUX)/$@ $(OBJ_TARGET_LINUX)
+	$(LD) $(CLINK_FLAGS) -Wl,-Map,$(BIN_DIR_LINUX)/$(BIN_NAME).map -o $(BIN_DIR_LINUX)/$@ $(OBJ_TARGET_LINUX)
 
 $(BIN_DIR_LINUX):
 	$(MK_DIR) $(OUT_DIR)
